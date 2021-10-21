@@ -37,7 +37,7 @@ var path = svg.select(".slices").selectAll("path");
 var polyline = svg.select(".lines").selectAll("allPolylines");
 var labels = svg.select(".labels").selectAll("allLabels");
 
-d3.csv("http://workzone/WET4/development/qtt972/d3-visualisation/tbl01-en.csv", type, function (error, data) {
+d3.csv("tbl01-en.csv", type, function (error, data) {
     var newData = [];
     data.forEach(function (d) {
         newData.push({ provinceTerritory: d.provinceTerritory, salary: "$45,916 or less", count: d.amt1 });
