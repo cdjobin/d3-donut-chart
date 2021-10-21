@@ -65,14 +65,7 @@ d3.csv("tbl01-en.csv", type, function (error, data) {
         .attr("value", function (d) { return d.key; })
         // JC --> La ligne ci-dessous fait en sorte que toutes les cases seront cochées en affichage initial
         .on("change", updateGraph)
-        // JC --> ce n'est pas nécessaire d'afficher le graphique immédiatement pour chaque élément.
-        //.each(updateGraph)
         .property("checked", true);
-        // JC --> A quoi sert la ligne ci-dessous? Je l'ai ajoutée/supprimée et je n'ai pas vu de différence dans l'affichage
-        //				Si tu voulais t'en servir pour identifier les cases qui sont cochées, ça ne marche pas. 
-        //				Si c'est possible de le faire, il faudrait lire en détail la documentation et regarder sur les Internets pour identifier comment faire.
-        //				J'ai créé un fonction pour vérifier les cases cochées et récupérer seulement les éléments sélectionnés.
-        //.filter(function (d, i) { return !i; })
         
     label.append("span")
         .text(function (d) { return d.key; });
@@ -104,23 +97,7 @@ d3.csv("tbl01-en.csv", type, function (error, data) {
             }
         });
         // console.log(selectedDataSet);
-        
-        /**
-        * JC --> Il faut maintenant faire une somme de ce qui est dans le nouveau array "selectedDataSet".
-        * Et ensuite créer le graphique
-        * Mais je ne suis pas assez fort avec D3.
-        * Autrement dit, il faut arriver à faire une structure de données qui ressemblerait à ca, c'est à dire un tableau avec les totaux:
-        [
-            { salary: "$45,916 or less", count: TOTAL_DES_CASES_COCHÉES },
-            { salary: "$45,917 - $91,831", count: TOTAL_DES_CASES_COCHÉES },
-            { salary: "$91,832 - $142,353", count: TOTAL_DES_CASES_COCHÉES },
-            { salary: "$142,354 - $202,800", count: TOTAL_DES_CASES_COCHÉES },
-            { salary: "$202,801 or more", count: TOTAL_DES_CASES_COCHÉES }
-        ]
-        *	Je sais que D3 contient déjà des fonctions de SUM mais je ne sais pas si on peut les passer directement en paramètre ou s'il faut refaire un nouveau
-        * array... 
-        *
-        */
+
         var newDataSet = [];
         selectedDataSet.forEach(function(d) {
             d.values.forEach(function(e) {
