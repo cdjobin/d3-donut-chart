@@ -37,7 +37,7 @@ var path = svg.select(".slices").selectAll("path");
 var polyline = svg.select(".lines").selectAll("allPolylines");
 var labels = svg.select(".labels").selectAll("allLabels");
 
-d3.csv("tbl01-en.csv", type, function (error, data) {
+d3.csv("http://workzone/WET4/development/qtt972/d3-visualisation/tbl01-en.csv", type, function (error, data) {
     var newData = [];
     data.forEach(function (d) {
         newData.push({ provinceTerritory: d.provinceTerritory, salary: "$45,916 or less", count: d.amt1 });
@@ -63,9 +63,16 @@ d3.csv("tbl01-en.csv", type, function (error, data) {
         .attr("type", "checkbox")
         .attr("name", "provinceTerritory")
         .attr("value", function (d) { return d.key; })
-        // JC --> La ligne ci-dessous fait en sorte que toutes les cases seront cochées en affichage initial
         .on("change", updateGraph)
+        // JC --> ce n'est pas nécessaire d'afficher le graphique immédiatement pour chaque élément.
+        //.each(updateGraph)
+        // JC --> La ligne ci-dessous fait en sorte que toutes les cases seront cochées en affichage initial
         .property("checked", true);
+        // JC --> A quoi sert la ligne ci-dessous? Je l'ai ajoutée/supprimée et je n'ai pas vu de différence dans l'affichage
+        //				Si tu voulais t'en servir pour identifier les cases qui sont cochées, ça ne marche pas. 
+        //				Si c'est possible de le faire, il faudrait lire en détail la documentation et regarder sur les Internets pour identifier comment faire.
+        //				J'ai créé un fonction pour vérifier les cases cochées et récupérer seulement les éléments sélectionnés.
+        //.filter(function (d, i) { return !i; })
         
     label.append("span")
         .text(function (d) { return d.key; });
@@ -97,7 +104,23 @@ d3.csv("tbl01-en.csv", type, function (error, data) {
             }
         });
         // console.log(selectedDataSet);
-
+        
+        /**
+        * JC --> Il faut maintenant faire une somme de ce qui est dans le nouveau array "selectedDataSet".
+        * Et ensuite créer le graphique
+        * Mais je ne suis pas assez fort avec D3.
+        * Autrement dit, il faut arriver à faire une structure de données qui ressemblerait à ca, c'est à dire un tableau avec les totaux:
+        [
+            { salary: "$45,916 or less", count: TOTAL_DES_CASES_COCHÉES },
+            { salary: "$45,917 - $91,831", count: TOTAL_DES_CASES_COCHÉES },
+            { salary: "$91,832 - $142,353", count: TOTAL_DES_CASES_COCHÉES },
+            { salary: "$142,354 - $202,800", count: TOTAL_DES_CASES_COCHÉES },
+            { salary: "$202,801 or more", count: TOTAL_DES_CASES_COCHÉES }
+        ]
+        *	Je sais que D3 contient déjà des fonctions de SUM mais je ne sais pas si on peut les passer directement en paramètre ou s'il faut refaire un nouveau
+        * array... 
+        *
+        */
         var newDataSet = [];
         selectedDataSet.forEach(function(d) {
             d.values.forEach(function(e) {
@@ -127,6 +150,7 @@ d3.csv("tbl01-en.csv", type, function (error, data) {
         polyline = polyline.data(data1, key);
         labels = labels.data(data1, key);
         
+        /*------- Pie Slice ------- */ 
         path.enter().append("path")
             .each(function (d, i) { this._current = findNeighborArc(i, data0, data1, key) || d; })
             .attr("fill", function (d) { return color(d.data.salary); })
@@ -145,6 +169,7 @@ d3.csv("tbl01-en.csv", type, function (error, data) {
             .duration(750)
             .attrTween("d", arcTween);
         
+        /*------- Polylines------- */ 
         polyline.enter().append("polyline")
             .each(function (d, i) { this._current = findNeighborArc(i, data0, data1, key) || d; })
             .attr("stroke", "black")
@@ -162,7 +187,8 @@ d3.csv("tbl01-en.csv", type, function (error, data) {
         polyline.transition()
             .duration(750)
             .attrTween("points", arcTweenPoints);
-            
+        
+         /*------- Labels------- */ 
         labels.enter().append("text")
             .each(function (d, i) {
                 this._current = findNeighborArc(i, data0, data1, key) || d;
@@ -176,13 +202,13 @@ d3.csv("tbl01-en.csv", type, function (error, data) {
             .datum(function (d, i) { return findNeighborArc(i, data1, data0, key) || d; })
             .transition()
             .duration(750)
-            .attrTween("transform", arcTweenTransfrom)
-            .styleTween("text-anchor", styleTweenTransform)
+            .attrTween("transform", arcTweenLabels)
+            .styleTween("text-anchor", styleTweenLabels)
             .remove();
-        
+
         labels.transition()
-            .attrTween("transform", arcTweenTransfrom)
-            .styleTween("text-anchor", styleTweenTransform)
+            .attrTween("transform", arcTweenLabels)
+            .styleTween("text-anchor", styleTweenLabels)
             .duration(750);
     }
 });
@@ -268,19 +294,52 @@ function arcTweenPoints(d) {
     };
 }
 
-function arcTweenTransfrom(d) {
+function arcTweenLabels(d, i) {
     var interpolate = d3.interpolate(this._current, d);
     var _this = this;
+
+    var array = [];
+    var current = array[i];
+    var length = array.length;
+    var prev = array[(i+length-1) % length];
+
+    array.push[_this];
+
     return function (t) {
         var d2 = interpolate(t);
         _this._current = d2;
+
+        var thisbb = _this.getBoundingClientRect();
+        console.log(array);
+
+
+        //var text = document.getElementsByTagName("text");
+        //prev = text[i].previousSibling;
+        //var prevbb = prev.getBoundingClientRect();
+
         var pos = outerArc.centroid(d2);
         pos[0] = radius * (midAngle(d2) < Math.PI ? 1 : -1);
+
+
+        /*if(i > 0) {
+            if ((prevbb.bottom - thisbb.bottom) <= thisbb.height) {
+                    //console.log('Début');
+                    //console.log(text[i]);
+                    //console.log('thisbb.top: ' + thisbb.top + ' thisbb.bottom: ' + thisbb.bottom + ' thisbb.left: ' + thisbb.left + ' thisbb.right: ' + thisbb.right);
+                    //console.log(prev);
+                    //console.log('prevbb.top: ' + prevbb.top + ' prevbb.bottom: ' + prevbb.bottom + ' prevbb.left: ' + prevbb.left + ' prevbb.right: ' + prevbb.right);
+
+                    //pos[1] = pos[1] + (prevbb.bottom - thisbb.bottom) + textOffset + (i*5);
+            }
+        }*/
+
+        
         return "translate(" + pos + ")";
+
     };
 }
 
-function styleTweenTransform(d) {
+function styleTweenLabels(d) {
     var interpolate = d3.interpolate(this._current, d);
     return function (t) {
         var d2 = interpolate(t);
