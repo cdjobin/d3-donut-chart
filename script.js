@@ -37,14 +37,20 @@ d3.csv("http://workzone/WET4/development/qtt972/d3-visualisation/tbl01-en.csv", 
         .append('table')
         .attr("class", "table table-condensed table-hover");
 
-    console.log(d3.keys(data[0]));
     var titles = d3.keys(data[0]);
+    
+    var titlesData = [];
+
+    for (i = 0; i < titles.length-1; i++) {
+        titlesData.push(titles[i]);
+    }
 
     var headers = table.append('thead')
         .append('tr')
         .selectAll('th')
-        .data(titles).enter()
+        .data(titlesData).enter()
         .append('th')
+        .attr("scope", "col")
         .text(function (d) {
             return d;
         });
@@ -54,20 +60,30 @@ d3.csv("http://workzone/WET4/development/qtt972/d3-visualisation/tbl01-en.csv", 
         .data(data).enter()
         .append('tr');
 
+        var formatter = new Intl.NumberFormat('en-CA', {
+            style: 'currency',
+            currency: 'CAD',
+          
+            maximumFractionDigits: 0, // (causes 2500.99 to be printed as $2,501)
+          });
+
     rows.selectAll('td')
         .data(function (d) {
-            return titles.map(function (k) {
+            return titlesData.map(function (k) {
                 return { 'value': d[k], 'name': k};
+            });
+        }).enter()
+        .append('td')
+        .attr('data-th', function (d) {
+            return d.name;
+        })
+        .text(function (d) {
+            if(isNaN(d.value)) {
+                return d.value;
+            } else {
+                return formatter.format(d.value);
+            }
         });
-    }).enter()
-    .append('td')
-    .attr('data-th', function (d) {
-        return d.name;
-    })
-    .text(function (d) {
-        return d.value;
-    });
-
 
     var newData = [];
     data.forEach(function (d) {
