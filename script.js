@@ -30,7 +30,7 @@ svg.append("g").attr("class", "legend").attr("transform", "translate(" + (width 
 var path = svg.select(".slices").selectAll("path");
 
 
-d3.csv("/tbl01-en.csv", type, function (error, data) {
+d3.csv("tbl01-en.csv", type, function (error, data) {
     if (error) throw error;
 
     var table = d3.select('.chart-table')
