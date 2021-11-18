@@ -30,7 +30,7 @@ svg.append("g").attr("class", "legend").attr("transform", "translate(" + (width 
 var path = svg.select(".slices").selectAll("path");
 
 
-d3.csv("http://workzone/WET4/development/qtt972/d3-visualisation/tbl01-en.csv", type, function (error, data) {
+d3.csv("/tbl01-en.csv", type, function (error, data) {
     if (error) throw error;
 
     var table = d3.select('.chart-table')
@@ -60,12 +60,12 @@ d3.csv("http://workzone/WET4/development/qtt972/d3-visualisation/tbl01-en.csv", 
         .data(data).enter()
         .append('tr');
 
-        var formatter = new Intl.NumberFormat('en-CA', {
+        /*var formatter = new Intl.NumberFormat('en-CA', {
             style: 'currency',
             currency: 'CAD',
           
             maximumFractionDigits: 0, // (causes 2500.99 to be printed as $2,501)
-          });
+          });*/
 
     rows.selectAll('td')
         .data(function (d) {
@@ -78,11 +78,12 @@ d3.csv("http://workzone/WET4/development/qtt972/d3-visualisation/tbl01-en.csv", 
             return d.name;
         })
         .text(function (d) {
-            if(isNaN(d.value)) {
+         return d.value;
+            /*if(isNaN(d.value)) {
                 return d.value;
             } else {
                 return formatter.format(d.value);
-            }
+            }*/
         });
 
     var newData = [];
